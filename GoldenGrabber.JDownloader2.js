@@ -1,5 +1,8 @@
 var crawlJob = null;
 
+var environment = getEnvironment();
+var pathSeparator = environment.getPathSeparator();
+
 try {
     crawlJob = job;
 } catch (err) {
@@ -8,7 +11,9 @@ try {
 }
 
 var sourceUrl_GoldenGrabber = "GoldenGrabber";
-var downloadDestinationFolder_default = "D:\\Download";
+var downloadDestinationFolder_default = "";
+//downloadDestinationFolder_default = "D:\\Download";
+downloadDestinationFolder_default = callAPI("config", "get", "org.jdownloader.settings.GeneralSettings", null, "DefaultDownloadFolder");
 var textToParse = "";
 var sourceUrl = "";
 // sourceUrl = "goldenkai.me";
@@ -32,8 +37,8 @@ var parsingSucceed = false;
 if (
     //false &&
     textToParse
+    // && 'goldenkai.me' == sourceUrl
 ) {
-    var downloadDestinationFolder = downloadDestinationFolder_default;
 
     //alert("textToParse", textToParse);
     {
@@ -41,7 +46,9 @@ if (
         var match = regex.exec(textToParse);
         while (match != null) {
             parsingSucceed = true;
-            var episodePackageName = match[1] + " " + match[2];
+            var animeName = match[1];
+            var episodeNumber = match[2];
+            var episodePackageName = animeName + " " + episodeNumber;
             var episodePageUrl = match[3];
             if (
                 // false &&
@@ -49,6 +56,15 @@ if (
                 episodePackageName &&
                 sourceUrl != sourceUrl_GoldenGrabber
             ) {
+                var downloadDestinationFolder = downloadDestinationFolder_default;
+                if (downloadDestinationFolder) {
+                    var animeFolderPathString = downloadDestinationFolder + pathSeparator + "Animes";
+                    animeFolderPathString = animeFolderPathString + pathSeparator + animeName;
+                    var animeFolderPathObject = getPath(animeFolderPathString);
+                    if (animeFolderPathObject.exists() && animeFolderPathObject.isDirectory()) {
+                        downloadDestinationFolder = animeFolderPathObject.getPath();
+                    }
+                }
                 var links = episodePageUrl;
                 // {
                 // links = "";
@@ -67,6 +83,9 @@ if (
                     "packageName": episodePackageName,
                     "sourceUrl": sourceUrl_GoldenGrabber
                 };
+                if (downloadDestinationFolder) {
+                    queryData["destinationFolder"] = downloadDestinationFolder;
+                }
                 // alert(queryData);
                 var linkCollectingJob = callAPI("linkgrabberv2", "addLinks", queryData);
             }
