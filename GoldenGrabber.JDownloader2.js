@@ -59,7 +59,7 @@ if (
                 var downloadDestinationFolder = downloadDestinationFolder_default;
                 if (downloadDestinationFolder) {
                     var animeFolderPathString = downloadDestinationFolder + pathSeparator + "Animes"; {
-                        var animeFolderRegexString = animeName.replace(/(\W+)/g, "[_\- '!]*");
+                        var animeFolderRegexString = animeName.replace(/(\W+)/g, "[_\\- '!]*");
                         //alert(animeFolderRegexString);
                         var animeFolderRegex = new RegExp(animeFolderRegexString, "i");
                         var animeFolderCandidates = [];
