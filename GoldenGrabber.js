@@ -2,9 +2,9 @@
 // @name        GoldenKai Links grabber
 // @namespace   goldenkai.me
 // @include     https://goldenkai.me/
-// @version     1
+// @version     2
+// @require     https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js
 // @grant       GM_registerMenuCommand
-// @require     http://ajax.googleapis.com/ajax/libs/jquery/2.2.1/jquery.min.js
 // ==/UserScript==
 this.$ = this.jQuery = jQuery.noConflict(true);
 function installGoldenGrabber()
@@ -39,7 +39,7 @@ function addLink(link, animeName, episodeNumber)
   if (0 < children.length && 'UL' == children.last().prop('tagName'))
   {
     ulElement = children.last();
-  } 
+  }
   else
   {
     ulElement = $('<ul/>');
@@ -79,5 +79,54 @@ function resetLinks() {
   $('#GoldenGrabber_main').remove();
   installGoldenGrabber();
 }
-GM_registerMenuCommand('Grab Links', grabLinks);
-GM_registerMenuCommand('Reset Links', resetLinks);
+
+if (typeof GM_registerMenuCommand !== 'undefined')
+{
+	GM_registerMenuCommand('Grab Links', grabLinks);
+	GM_registerMenuCommand('Reset Links', resetLinks);
+}
+else
+{
+  /*
+  Called when the item has been created, or when creation failed due to an error.
+  We'll just log success/failure here.
+  */
+  function onCreated() {
+    if (browser.runtime.lastError) {
+      console.log(`Error: ${browser.runtime.lastError}`);
+    } else {
+      console.log("Item created successfully");
+    }
+  }
+
+  /*
+  Create all the context menu items.
+  */
+  browser.menus.create({
+    id: "grab-links",
+    title: 'Grab Links',
+    contexts: ["all"]
+  }, onCreated);
+  browser.menus.create({
+    id: "reset-links",
+    title: 'Reset Links',
+    contexts: ["all"]
+  }, onCreated);
+
+  /*
+  The click event listener, where we perform the appropriate action given the
+  ID of the menu item that was clicked.
+  */
+  browser.menus.onClicked.addListener((info, tab) => {
+    switch (info.menuItemId) {
+      case "grab-links":
+        console.log(info.selectionText);
+        grabLinks();
+        break;
+      case "reset-links":
+        console.log(info.selectionText);
+        resetLinks();
+        break;
+    }
+  });
+}
